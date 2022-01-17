@@ -183,7 +183,7 @@ function solarsystem() {
     var time = new Date();
     this.ctx.rotate(
       ((2 * Math.PI) / 60) * time.getSeconds() +
-        ((2 * Math.PI) / 60000) * time.getMilliseconds()
+      ((2 * Math.PI) / 60000) * time.getMilliseconds()
     );
     this.ctx.translate(105, 0);
     this.ctx.fillRect(0, -12, 40, 24); // Shadow
@@ -193,7 +193,7 @@ function solarsystem() {
     this.ctx.save();
     this.ctx.rotate(
       ((2 * Math.PI) / 6) * time.getSeconds() +
-        ((2 * Math.PI) / 6000) * time.getMilliseconds()
+      ((2 * Math.PI) / 6000) * time.getMilliseconds()
     );
     this.ctx.translate(0, 28.5);
     this.ctx.drawImage(moon, -3.5, -3.5);
@@ -206,6 +206,105 @@ function solarsystem() {
     this.ctx.stroke();
 
     this.ctx.drawImage(sun, 0, 0, 300, 300);
+
+    window.requestAnimationFrame(draw);
+  }
+}
+
+function worm() {
+
+  window.requestAnimationFrame(draw);
+
+  let speedX = 1
+  let speedY = 0
+
+  let speedOldX = 1
+  let speedOldY = 0
+
+  let width = 300
+  let height = 300
+
+  let changed = false
+  let countChanged = 0
+
+  const body = [{ x: 10, y: 10, w: 10, h: 10 }]
+  const head = { x: 30, y: 15, radius: 5, startAngle: 0, endAngle: 2 * Math.PI }
+
+  const my_worm = [head, ...body]
+
+  function draw() {
+    this.ctx.clearRect(0, 0, width, height); // clear canvas    
+
+    const [head, ...body] = my_worm
+
+    document.onkeydown = function (evt) {
+      evt = evt || window.event;
+      const charCode = evt.key;
+
+      if (charCode === 'ArrowDown') {
+        speedX = 0
+        speedY = 1
+
+        changed = true
+      }
+
+      if (charCode === 'ArrowUp') {
+        speedX = 0
+        speedY = -1
+
+        changed = true
+      }
+
+      if (charCode === 'ArrowRight') {
+        speedX = 1
+        speedY = 0
+
+        changed = true
+      }
+
+      if (charCode === 'ArrowLeft') {
+        speedX = -1
+        speedY = 0
+
+        changed = true
+      }
+    };
+
+    if (changed) {
+      if (countChanged < 15) {
+        countChanged++
+      } else {
+        console.log('else', changed, countChanged, speedOldX, speedOldY, speedX, speedY)
+        speedOldX = speedX
+        speedOldY = speedY
+
+        changed = false
+        countChanged = 0
+      }
+    }
+
+    body.forEach((piece_body, index) => {
+      const currentIndex = index + 1
+      const { x, y, w, h } = piece_body
+      const walkX = x + speedOldX
+      const walkY = y + speedOldY
+
+      my_worm.splice(currentIndex, 1, { x: walkX, y: walkY, w, h })
+
+      let body2D = new Path2D();
+      body2D.rect(walkX, walkY, w, h);
+      this.ctx.stroke(body2D);
+    })
+
+    const { x, y, radius, startAngle, endAngle } = head
+    const walkX = x + speedX
+    const walkY = y + speedY
+
+    my_worm.splice(0, 1, { x: walkX, y: walkY, radius, startAngle, endAngle })
+
+    let head2D = new Path2D();
+    head2D.arc(walkX, walkY, radius, startAngle, endAngle);
+    this.ctx.fill(head2D);
 
     window.requestAnimationFrame(draw);
   }
@@ -228,7 +327,8 @@ function init() {
         curve: curve,
         packman: packman,
         path2d: path2d,
-        solarsystem: solarsystem
+        solarsystem: solarsystem,
+        worm: worm
       };
     };
 
